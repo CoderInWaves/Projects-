@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Meeting Insights</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .upload-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .search-icon { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .insights-icon { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-button:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .insight-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .insight-item.risk {
+            border-left-color: #dc3545;
+        }
+        
+        .insight-item.decision {
+            border-left-color: #007bff;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f4;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Meeting Insights</h1>
+            <p>Transform your meeting transcripts into actionable insights</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon upload-icon">📄</div>
+                <h2>Upload Transcript</h2>
+                <div class="input-group">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" class="file-input" accept=".txt" />
+                        <div class="file-input-button">
+                            <strong>Choose file</strong> or drag and drop<br>
+                            <small>Supports .txt files</small>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="upload()">🚀 Analyze Meeting</button>
+                <div class="loading" id="uploadLoading">
+                    <div class="spinner"></div>
+                    <p>Analyzing transcript...</p>
+                </div>
+                <div id="uploadResult" class="results" style="display: none;"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon search-icon">🔍</div>
+                <h2>Search Meetings</h2>
+                <div class="input-group">
+                    <input type="text" id="keywordInput" placeholder="Search by keyword (e.g., budget, timeline)" />
+                    <button class="btn" onclick="searchKeyword()">Search Keywords</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="participantInput" placeholder="Search by participant name" />
+                    <button class="btn" onclick="searchParticipant()">Search Participants</button>
+                </div>
+                <div id="searchResult" class="results" style="display: none;"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon insights-icon">💡</div>
+                <h2>View Insights</h2>
+                <div class="input-group">
+                    <input type="number" id="meetingIdInput" placeholder="Enter Meeting ID" />
+                    <button class="btn" onclick="getInsights()">Get Insights</button>
+                </div>
+                <div id="insightsResult" class="results" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File input display
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Choose file or drag and drop';
+            document.querySelector('.file-input-button').innerHTML = 
+                `<strong>${fileName}</strong><br><small>Ready to analyze</small>`;
+        });
+
+        async function upload() {
+            const fileInput = document.getElementById("fileInput");
+            if (!fileInput.files[0]) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            const loading = document.getElementById('uploadLoading');
+            const result = document.getElementById('uploadResult');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                const res = await fetch("http://localhost:8000/upload/", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await res.json();
+                
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                
+                result.innerHTML = `
+                    <h3>🎉 Meeting Analyzed Successfully!</h3>
+                    <p><strong>Meeting ID:</strong> ${data.meeting_id}</p>
+                    
+                    <h4>🎯 Action Items:</h4>
+                    ${formatInsights(data.insights.action_items, 'action')}
+                    
+                    <h4>⚠️ Risks & Issues:</h4>
+                    ${formatInsights(data.insights.risks, 'risk')}
+                    
+                    <h4>✅ Decisions Made:</h4>
+                    ${formatInsights(data.insights.decisions, 'decision')}
+                `;
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        function formatInsights(items, type) {
+            if (!items || items.length === 0) {
+                return '<p><em>None found</em></p>';
+            }
+            
+            return items.map(item => 
+                `<div class="insight-item ${type}">${item}</div>`
+            ).join('');
+        }
+        
+        async function searchKeyword() {
+            const keyword = document.getElementById("keywordInput").value.trim();
+            if (!keyword) {
+                alert('Please enter a keyword to search!');
+                return;
+            }
+            
+            const result = document.getElementById('searchResult');
+            result.style.display = 'block';
+            result.innerHTML = '<div class="spinner"></div><p>Searching...</p>';
+            
+            try {
+                const res = await fetch(`http://localhost:8000/search/keyword?keyword=${encodeURIComponent(keyword)}`);
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    result.innerHTML = '<p><em>No meetings found with that keyword</em></p>';
+                } else {
+                    result.innerHTML = `
+                        <h4>Found ${data.length} meeting(s):</h4>
+                        ${data.map(meeting => `
+                            <div class="insight-item">
+                                <strong>Meeting #${meeting.id}</strong><br>
+                                <small>Date: ${new Date(meeting.date).toLocaleDateString()}</small><br>
+                                Participants: ${meeting.participants || 'Not specified'}
+                            </div>
+                        `).join('')}
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function searchParticipant() {
+            const participant = document.getElementById("participantInput").value.trim();
+            if (!participant) {
+                alert('Please enter a participant name!');
+                return;
+            }
+            
+            const result = document.getElementById('searchResult');
+            result.style.display = 'block';
+            result.innerHTML = '<div class="spinner"></div><p>Searching...</p>';
+            
+            try {
+                const res = await fetch(`http://localhost:8000/search/participant?participant=${encodeURIComponent(participant)}`);
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    result.innerHTML = '<p><em>No meetings found with that participant</em></p>';
+                } else {
+                    result.innerHTML = `
+                        <h4>Found ${data.length} meeting(s) with ${participant}:</h4>
+                        ${data.map(meeting => `
+                            <div class="insight-item">
+                                <strong>Meeting #${meeting.id}</strong><br>
+                                <small>Date: ${new Date(meeting.date).toLocaleDateString()}</small><br>
+                                Participants: ${meeting.participants || 'Not specified'}
+                            </div>
+                        `).join('')}
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function getInsights() {
+            const meetingId = document.getElementById("meetingIdInput").value;
+            if (!meetingId) {
+                alert('Please enter a meeting ID!');
+                return;
+            }
+            
+            const result = document.getElementById('insightsResult');
+            result.style.display = 'block';
+            result.innerHTML = '<div class="spinner"></div><p>Loading insights...</p>';
+            
+            try {
+                const res = await fetch(`http://localhost:8000/insights/${meetingId}`);
+                const data = await res.json();
+                
+                result.innerHTML = `
+                    <h3>💡 Insights for Meeting #${meetingId}</h3>
+                    
+                    <h4>🎯 Action Items:</h4>
+                    ${formatInsights(data.action_items, 'action')}
+                    
+                    <h4>⚠️ Risks & Issues:</h4>
+                    ${formatInsights(data.risks, 'risk')}
+                    
+                    <h4>✅ Decisions Made:</h4>
+                    ${formatInsights(data.decisions, 'decision')}
+                `;
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: Meeting not found or ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

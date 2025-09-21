@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Smart Invoice Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 1rem 0;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .report-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+        
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a href="/" class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line me-2"></i>Smart Invoice Analytics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reports">
+                            <i class="fas fa-chart-bar me-1"></i>Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/vendors">
+                            <i class="fas fa-building me-1"></i>Vendors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/settings">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <span class="nav-link" id="currentTime"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-chart-bar me-2"></i>Financial Reports</h2>
+                <p class="text-muted">Comprehensive analytics and insights for your business</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="report-card">
+                    <h4><i class="fas fa-calendar-alt me-2"></i>Monthly Trends</h4>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="report-card">
+                    <h4><i class="fas fa-building me-2"></i>Vendor Analysis</h4>
+                    <div class="chart-container">
+                        <canvas id="vendorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="report-card text-center">
+                    <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                    <h3 id="totalInvoices">0</h3>
+                    <p class="text-muted">Total Invoices</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="report-card text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                    <h3 id="totalRevenue">$0</h3>
+                    <p class="text-muted">Total Revenue</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="report-card text-center">
+                    <i class="fas fa-percentage fa-3x text-warning mb-3"></i>
+                    <h3 id="paidPercentage">0%</h3>
+                    <p class="text-muted">Payment Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4><i class="fas fa-download me-2"></i>Export Reports</h4>
+                        <div>
+                            <button class="btn btn-gradient me-2" onclick="exportPDF()">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                            <button class="btn btn-gradient" onclick="exportCSV()">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-muted">Download comprehensive reports for your records</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            loadReportData();
+        });
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+
+        async function loadReportData() {
+            try {
+                const [statsResponse, analyticsResponse] = await Promise.all([
+                    fetch('/stats'),
+                    fetch('/analytics')
+                ]);
+                
+                const stats = await statsResponse.json();
+                const analytics = await analyticsResponse.json();
+                
+                // Update summary cards
+                document.getElementById('totalInvoices').textContent = stats.total_invoices;
+                document.getElementById('totalRevenue').textContent = '$' + stats.total_amount.toLocaleString();
+                
+                const paidRate = stats.total_invoices > 0 ? 
+                    Math.round((stats.paid_count / stats.total_invoices) * 100) : 0;
+                document.getElementById('paidPercentage').textContent = paidRate + '%';
+                
+                // Monthly trends chart
+                if (analytics.monthly_trends) {
+                    const ctx = document.getElementById('monthlyChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Object.keys(analytics.monthly_trends),
+                            datasets: [{
+                                label: 'Monthly Revenue',
+                                data: Object.values(analytics.monthly_trends),
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'rgba(0,0,0,0.1)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Vendor chart
+                if (analytics.top_vendors) {
+                    const ctx2 = document.getElementById('vendorChart').getContext('2d');
+                    new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(analytics.top_vendors),
+                            datasets: [{
+                                data: Object.values(analytics.top_vendors),
+                                backgroundColor: [
+                                    '#667eea', '#764ba2', '#f093fb', 
+                                    '#f5576c', '#4facfe', '#00f2fe'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error loading report data:', error);
+            }
+        }
+
+        function exportPDF() {
+            alert('PDF export functionality would be implemented here');
+        }
+
+        function exportCSV() {
+            alert('CSV export functionality would be implemented here');
+        }
+    </script>
+</body>
+</html>

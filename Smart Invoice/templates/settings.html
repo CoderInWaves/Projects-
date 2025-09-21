@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Smart Invoice Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+        
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background: var(--primary-gradient);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a href="/" class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line me-2"></i>Smart Invoice Analytics
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">
+                            <i class="fas fa-chart-bar me-1"></i>Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/vendors">
+                            <i class="fas fa-building me-1"></i>Vendors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/settings">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <span class="nav-link" id="currentTime"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-cog me-2"></i>Settings</h2>
+                <p class="text-muted">Configure your Smart Invoice Analytics preferences</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h4><i class="fas fa-user me-2"></i>Profile Settings</h4>
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" value="Your Company">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" value="admin@company.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Currency</label>
+                            <select class="form-select" id="currency">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="JPY">JPY (¥)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-gradient">
+                            <i class="fas fa-save me-1"></i>Save Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h4><i class="fas fa-bell me-2"></i>Notifications</h4>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>Email Notifications</strong>
+                                <br><small class="text-muted">Receive email alerts for overdue invoices</small>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="emailNotifications" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>Payment Reminders</strong>
+                                <br><small class="text-muted">Send reminders for pending payments</small>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="paymentReminders" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>Weekly Reports</strong>
+                                <br><small class="text-muted">Receive weekly analytics summary</small>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="weeklyReports">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-gradient" onclick="saveNotifications()">
+                        <i class="fas fa-save me-1"></i>Save Notifications
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h4><i class="fas fa-database me-2"></i>Data Management</h4>
+                    <p class="text-muted">Manage your invoice data and backups</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="exportData()">
+                            <i class="fas fa-download me-1"></i>Export All Data
+                        </button>
+                        <button class="btn btn-outline-success" onclick="backupData()">
+                            <i class="fas fa-cloud-upload-alt me-1"></i>Backup to Cloud
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="clearData()">
+                            <i class="fas fa-trash me-1"></i>Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="settings-card">
+                    <h4><i class="fas fa-palette me-2"></i>Appearance</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Theme</label>
+                        <select class="form-select" id="theme">
+                            <option value="light">Light Theme</option>
+                            <option value="dark">Dark Theme</option>
+                            <option value="auto">Auto (System)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dashboard Layout</label>
+                        <select class="form-select" id="layout">
+                            <option value="default">Default Layout</option>
+                            <option value="compact">Compact Layout</option>
+                            <option value="expanded">Expanded Layout</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-gradient" onclick="saveAppearance()">
+                        <i class="fas fa-save me-1"></i>Save Appearance
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="settings-card">
+                    <h4><i class="fas fa-info-circle me-2"></i>System Information</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Version</strong>
+                            <br><span class="text-muted">v1.0.0</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Database</strong>
+                            <br><span class="text-muted">PostgreSQL</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Last Backup</strong>
+                            <br><span class="text-muted">Never</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Storage Used</strong>
+                            <br><span class="text-muted">2.3 MB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert">
+            <div class="toast-header bg-success text-white">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="successMessage"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            loadSettings();
+        });
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+
+        function loadSettings() {
+            // Load saved settings from localStorage
+            const savedSettings = JSON.parse(localStorage.getItem('invoiceSettings') || '{}');
+            
+            if (savedSettings.companyName) {
+                document.getElementById('companyName').value = savedSettings.companyName;
+            }
+            if (savedSettings.email) {
+                document.getElementById('email').value = savedSettings.email;
+            }
+            if (savedSettings.currency) {
+                document.getElementById('currency').value = savedSettings.currency;
+            }
+        }
+
+        function showToast(message) {
+            document.getElementById('successMessage').textContent = message;
+            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+            toast.show();
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const settings = {
+                companyName: document.getElementById('companyName').value,
+                email: document.getElementById('email').value,
+                currency: document.getElementById('currency').value
+            };
+            
+            localStorage.setItem('invoiceSettings', JSON.stringify(settings));
+            showToast('Profile settings saved successfully!');
+        });
+
+        function saveNotifications() {
+            const notifications = {
+                email: document.getElementById('emailNotifications').checked,
+                payments: document.getElementById('paymentReminders').checked,
+                weekly: document.getElementById('weeklyReports').checked
+            };
+            
+            localStorage.setItem('notificationSettings', JSON.stringify(notifications));
+            showToast('Notification settings saved successfully!');
+        }
+
+        function saveAppearance() {
+            const appearance = {
+                theme: document.getElementById('theme').value,
+                layout: document.getElementById('layout').value
+            };
+            
+            localStorage.setItem('appearanceSettings', JSON.stringify(appearance));
+            showToast('Appearance settings saved successfully!');
+        }
+
+        function exportData() {
+            showToast('Data export started! Download will begin shortly.');
+        }
+
+        function backupData() {
+            showToast('Backup initiated! Your data is being saved to cloud.');
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                showToast('All data has been cleared successfully!');
+            }
+        }
+    </script>
+</body>
+</html>

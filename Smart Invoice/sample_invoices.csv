@@ -1,0 +1,11 @@
+date,vendor,amount,status
+2024-01-15,Office Supplies Co,1250.00,paid
+2024-01-20,Tech Solutions Inc,3500.00,paid
+2024-02-05,Marketing Agency,2800.00,overdue
+2024-02-12,Office Supplies Co,890.00,paid
+2024-02-28,Software Licensing,5000.00,paid
+2024-03-10,Tech Solutions Inc,4200.00,pending
+2024-03-15,Utilities Company,450.00,paid
+2024-03-22,Marketing Agency,3200.00,overdue
+2024-04-01,Office Supplies Co,1100.00,paid
+2024-04-08,Consulting Services,7500.00,pending
